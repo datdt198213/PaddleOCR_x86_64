@@ -1,5 +1,5 @@
-root_path="/paddle/PaddleOCR/deploy/cpp_infer/opencv-3.4.7"
-install_path=${root_path}/opencv3
+root_path="/home/anlab/x86_64/PaddleOCR/deploy/cpp_infer/opencv-3.4.7"
+install_path=${root_path}/test_opencv3
 build_dir=${root_path}/build
 
 rm -rf ${build_dir}
