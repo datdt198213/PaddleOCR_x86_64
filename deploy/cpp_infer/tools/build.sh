@@ -22,3 +22,6 @@ cmake .. \
     # -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_AARCH64_DIR}
 
 make -j
+
+# Download openblas on https://github.com/OpenMathLib/OpenBLAS/releases
+# Download paddle_inference on 
