@@ -1,5 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
 project(ppocr CXX C)
-cmake_minimum_required(VERSION 3.14)
 
 option(WITH_MKL        "Compile demo with MKL/OpenBlas support, default use MKL."       ON)
 option(WITH_GPU        "Compile demo with GPU/CPU, default use CPU."                    OFF)
@@ -14,7 +14,9 @@ SET(TENSORRT_DIR "" CACHE PATH "Compile demo with TensorRT")
 
 set(DEMO_NAME "ppocr")
 
-
+message(STATUS "CUDA_LIB: ${CUDA_LIB}")
+message(STATUS "OPENCV_DIR: ${OPENCV_DIR}")
+message(STATUS "CUDNN_LIB: ${CUDNN_LIB}")
 macro(safe_set_static_flag)
     foreach(flag_var
         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
@@ -37,6 +39,8 @@ if(NOT DEFINED OPENCV_DIR)
     message(FATAL_ERROR "please set OPENCV_DIR with -DOPENCV_DIR=/path/opencv")
 endif()
 
+
+message(STATUS "CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 
 if (WIN32)
   include_directories("${PADDLE_LIB}/paddle/include")
@@ -101,13 +105,12 @@ include_directories("${CMAKE_SOURCE_DIR}/")
 
 if (NOT WIN32)
   if (WITH_TENSORRT AND WITH_GPU)
-     include_directories("${TENSORRT_DIR}/include")
-     link_directories("${TENSORRT_DIR}/lib")
+     include_directories("/usr/include/aarch64-linux-gnu")
+     link_directories("/usr/lib/aarch64-linux-gnu")
   endif()
 endif(NOT WIN32)
 
 link_directories("${PADDLE_LIB}/third_party/install/zlib/lib")
-
 link_directories("${PADDLE_LIB}/third_party/install/protobuf/lib")
 link_directories("${PADDLE_LIB}/third_party/install/glog/lib")
 link_directories("${PADDLE_LIB}/third_party/install/gflags/lib")
@@ -115,7 +118,6 @@ link_directories("${PADDLE_LIB}/third_party/install/xxhash/lib")
 link_directories("${PADDLE_LIB}/third_party/install/onnxruntime/lib")
 link_directories("${PADDLE_LIB}/third_party/install/paddle2onnx/lib")
 link_directories("${PADDLE_LIB}/paddle/lib")
-
 
 if(WITH_MKL)
   include_directories("${PADDLE_LIB}/third_party/install/mklml/include")
@@ -191,8 +193,8 @@ endif(NOT WIN32)
 if(WITH_GPU)
   if(NOT WIN32)
     if (WITH_TENSORRT)
-      set(DEPS ${DEPS} ${TENSORRT_DIR}/lib/libnvinfer${CMAKE_SHARED_LIBRARY_SUFFIX})
-      set(DEPS ${DEPS} ${TENSORRT_DIR}/lib/libnvinfer_plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set(DEPS ${DEPS} ${TENSORRT_DIR}/libnvinfer${CMAKE_SHARED_LIBRARY_SUFFIX})
+      set(DEPS ${DEPS} ${TENSORRT_DIR}/libnvinfer_plugin${CMAKE_SHARED_LIBRARY_SUFFIX})
     endif()
     set(DEPS ${DEPS} ${CUDA_LIB}/libcudart${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(DEPS ${DEPS} ${CUDNN_LIB}/libcudnn${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -203,6 +205,7 @@ if(WITH_GPU)
   endif()
 endif()
 
+# set(DEPS ${DEPS} ${PADDLE_LIB}/third_party/install/protobuf/lib/libprotobuf.a)
 
 if (NOT WIN32)
     set(EXTERNAL_LIB "-ldl -lrt -lgomp -lz -lm -lpthread")
@@ -214,10 +217,19 @@ set(DEPS ${DEPS} ${OpenCV_LIBS})
 include(FetchContent)
 include(external-cmake/auto-log.cmake)
 include_directories(${FETCHCONTENT_BASE_DIR}/extern_autolog-src)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 AUX_SOURCE_DIRECTORY(./src SRCS)
-add_executable(${DEMO_NAME} ${SRCS})
-target_link_libraries(${DEMO_NAME} ${DEPS})
+add_library(ocr_engine SHARED ${SRCS})
+target_link_libraries(ocr_engine ${DEPS})
+
+message(STATUS "FETCHCONTENT_BASE_DIR: ${FETCHCONTENT_BASE_DIR}")
+message(STATUS "OpenCV_LIBS: ${OpenCV_LIBS}")
+message(STATUS "DEMO_NAME: ${DEMO_NAME}")
+message(STATUS "SRCS: ${SRCS}")
+message(STATUS "EXTERNAL_LIB: ${EXTERNAL_LIB}")
+message(STATUS "DEPS: ${DEPS}")
+message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 
 if (WIN32 AND WITH_MKL)
     add_custom_command(TARGET ${DEMO_NAME} POST_BUILD
