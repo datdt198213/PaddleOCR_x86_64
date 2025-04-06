@@ -232,8 +232,6 @@ if(WITH_GPU)
   endif()
 endif()
 
-# set(DEPS ${DEPS} ${PADDLE_LIB}/third_party/install/protobuf/lib/libprotobuf.a)
-
 if (NOT WIN32)
     set(EXTERNAL_LIB "-ldl -lrt -lgomp -lz -lm -lpthread")
     set(DEPS ${DEPS} ${EXTERNAL_LIB})
@@ -247,8 +245,8 @@ include_directories(${FETCHCONTENT_BASE_DIR}/extern_autolog-src)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 AUX_SOURCE_DIRECTORY(./src SRCS)
-add_library(ocr_engine SHARED ${SRCS})
-target_link_libraries(ocr_engine ${DEPS})
+add_library(ocr SHARED ${SRCS})
+target_link_libraries(ocr ${DEPS})
 
 message(STATUS "FETCHCONTENT_BASE_DIR: ${FETCHCONTENT_BASE_DIR}")
 message(STATUS "OpenCV_LIBS: ${OpenCV_LIBS}")
